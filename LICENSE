@@ -1,0 +1,16 @@
+# License Overview
+
+This repository follows the [REUSE specification](https://reuse.software/).
+Each source file declares its licensing via SPDX headers, and these headers are
+the authoritative source of license information.
+
+## Licensing Strategy
+
+- **Firmware (`firmware/`)** is licensed under the **GNU General Public License v3.0 or later**.
+- **Documentation and example hardware modifications (`docs/`)** are **dual-licensed**:
+  - [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/)
+  - GNU General Public License v3.0 or later
+  You may choose either license.
+- **Vendored USB host component (`firmware/components/usb_host_hid`)** is licensed under the **Apache License 2.0**.
+
+Full license texts can be found in the `LICENSES/` directory.

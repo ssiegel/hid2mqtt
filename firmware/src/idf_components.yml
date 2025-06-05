@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: © 2025 Stefan Siegel <ssiegel@sdas.net>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+## IDF Component Manager Manifest File
+dependencies:
+  idf: ">=4.4"
+  usb_host_hid: "^1.0.1"

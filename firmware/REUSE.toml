@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: © 2025 Stefan Siegel <ssiegel@sdas.net>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+
+[[annotations]]
+path = [
+    "dependencies.lock",
+    "sdkconfig.lolin_s2_mini"
+]
+SPDX-FileCopyrightText = "© 2025 Stefan Siegel <ssiegel@sdas.net>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "components/usb_host_hid/**"
+SPDX-FileCopyrightText = "© 2022-2024 Espressif Systems (Shanghai) CO LTD"
+SPDX-License-Identifier = "Apache-2.0"
