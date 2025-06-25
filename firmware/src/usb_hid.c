@@ -206,29 +206,40 @@ static void hid_host_keyboard_report_callback(const uint8_t *const data,
     }
 
     const bool alt_pressed =
-        kb_report->modifier.val & (HID_LEFT_ALT | HID_RIGHT_ALT);
-    static uint16_t alt_code = 0;
+        kb_report->modifier.val &&
+        kb_report->modifier.val ==
+            (kb_report->modifier.val & (HID_LEFT_ALT | HID_RIGHT_ALT));
+    static uint32_t alt_code = 0;
     static uint8_t prev_keys[HID_KEYBOARD_KEY_MAX] = {0};
     unsigned char key_char;
 
     if (alt_code && !alt_pressed) {
-        // This part is a hack, probably specific to the Tera HW0007 barcode
-        // reader. It turns out the alt-code is not a unicode code point, but
-        // most of the time we get the intended result by interpreting it as two
-        // bytes of the UTF-8 output string.
-        ESP_LOGI(TAG, "Alt-Code: Code %d completed", alt_code);
+        ESP_LOGI(TAG, "Alt-Code: Code %"PRIu32" (0x%"PRIx32") completed", alt_code, alt_code);
         if (key_char_callback) {
-            if (alt_code >> 8) {
-                ESP_LOGI(TAG, "-> submitting high byte %x", alt_code >> 8);
-                key_char_callback(alt_code >> 8);
+            // convert the alt code unicode code point into utf8 bytes
+            if (alt_code <= 0x7f) {
+                // 1-byte sequence: 0xxxxxxx
+                key_char_callback((char)alt_code);
+            } else if (alt_code <= 0x7ff) {
+                // 2-byte sequence: 110xxxxx 10xxxxxx
+                key_char_callback((char)(0xc0 | ((alt_code >>  6) & 0x1f)));
+                key_char_callback((char)(0x80 | ( alt_code        & 0x3f)));
+            } else if (alt_code <= 0xffff) {
+                // 3-byte sequence: 1110xxxx 10xxxxxx 10xxxxxx
+                key_char_callback((char)(0xe0 | ((alt_code >> 12) & 0x0f)));
+                key_char_callback((char)(0x80 | ((alt_code >>  6) & 0x3f)));
+                key_char_callback((char)(0x80 | ( alt_code        & 0x3f)));
+            } else if (alt_code <= 0x10ffff) {
+                // 4-byte sequence: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                key_char_callback((char)(0xf0 | ((alt_code >> 18) & 0x07)));
+                key_char_callback((char)(0x80 | ((alt_code >> 12) & 0x3f)));
+                key_char_callback((char)(0x80 | ((alt_code >>  6) & 0x3f)));
+                key_char_callback((char)(0x80 | ( alt_code        & 0x3f)));
             } else {
-                ESP_LOGI(TAG, "-> ignoring high byte %x", alt_code >> 8);
-            }
-            if (alt_code & 0x80) {
-                ESP_LOGI(TAG, "-> submitting low byte %x", alt_code & 0xff);
-                key_char_callback(alt_code & 0xff);
-            } else {
-                ESP_LOGI(TAG, "-> ignoring low byte %x", alt_code & 0xff);
+                // Invalid code point, emit replacement character U+FFFD
+                key_char_callback((char)0xef);
+                key_char_callback((char)0xbf);
+                key_char_callback((char)0xbd);
             }
         }
         alt_code = 0;
